@@ -29,7 +29,7 @@ class Offline_RAG:
         self.str_parser = Str_OutputParser()
 
     def format_docs(self, docs):
-        return "\n\n".join(docs.page_content for doc in docs)
+        return "\n\n".join(doc.page_content for doc in docs)
 
     def get_chain(self, retriever):
         input_data = {

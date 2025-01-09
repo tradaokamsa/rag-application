@@ -1,6 +1,10 @@
-wget
 langchain_chroma
 langchain_community
 langchain
 transformers
 torch
+langchain_huggingface
+bitsandbytes>=0.39.0
+accelerate
+pypdf
+rapidocr-onnxruntime

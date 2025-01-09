@@ -1,25 +1,18 @@
 import torch
-from transformers import BitsAndBytesConfig
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from transformers import pipeline
-from langchain_community.llms import HuggingFacePipeline
+# from transformers import BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from langchain_huggingface.llms import HuggingFacePipeline
 
+# quantization_config = BitsAndBytesConfig(load_in_4bit=True)
 
-nf4_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",  
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_compute_dtype=torch.bfloat16
-)
-
-def get_hf_llm(model_name: str = "mistralai/Mistral-7B-Instruct-v0.3",
-               max_new_tokens: int = 1024,
+def get_hf_llm(model_name: str = "facebook/opt-125m",
+               max_new_token: int = 1024,
                **kwargs):
     
     model = AutoModelForCausalLM.from_pretrained(
         model_name, 
-        quantization_config=nf4_config,
-        low_cpu_mem_usage=True
+        # quantization_config=quantization_config,
+        # low_cpu_mem_usage=True,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -28,7 +21,7 @@ def get_hf_llm(model_name: str = "mistralai/Mistral-7B-Instruct-v0.3",
         "text-generation",
         model=model,
         tokenizer=tokenizer,
-        nax_new_tokens=max_new_tokens,
+        max_new_tokens=max_new_token,
         pad_token_id=tokenizer.eos_token_id,
         device_map="auto"
     )

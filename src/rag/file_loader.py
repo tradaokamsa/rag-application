@@ -1,7 +1,6 @@
 from typing import Union, List, Literal
 import glob
 from tqdm import tqdm
-import multiprocessing
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -14,27 +13,17 @@ def load_pdf(pdf_file):
         doc.page_content = remove_non_utf18_characters(doc.page_content)
     return docs
 
-def get_num_cpu():
-    return multiprocessing.cpu_count()
-
-class BaseLoader:
-    def __init__(self) -> None:
-        self.num_processes = get_num_cpu()
-    def __call__(self, files: List[str], **kwargs):
-        pass
-
-class PDFLoader(BaseLoader):
+class PDFLoader():
     def __init__(self) -> None:
         super().__init__()
     def __call__(self, pdf_files: List[str], **kwargs):
-        num_processes = min(self.num_processes, kwargs["workers"])
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            doc_loaded = []
-            total_files = len(pdf_files)
-            with tqdm(total=total_files, desc="Loading PDFs", unit="file") as pbar:
-                for result in pool.imap_unordered(load_pdf, pdf_files):
-                    doc_loaded.extend(result)
-                    pbar.update(1)
+        doc_loaded = []
+        total_files = len(pdf_files)
+        with tqdm(total=total_files, desc="Loading PDFs", unit="file") as pbar:
+            for pdf_file in pdf_files:
+                result = load_pdf(pdf_file)
+                doc_loaded.extend(result)
+                pbar.update(1)
         return doc_loaded
     
 class TextSplitter:
@@ -44,7 +33,7 @@ class TextSplitter:
                  chunk_overlap: int = 0) -> None:
         
         self.splitter = RecursiveCharacterTextSplitter(
-            separator=separator,
+            separators=separator,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap
         )
@@ -62,6 +51,7 @@ class Loader:
         
         assert file_type in ["pdf"], "file_type must be 'pdf'"
         self.file_type = file_type
+        self.doc_splitter = TextSplitter()
         if file_type == "pdf":
             self.doc_loader = PDFLoader()
         else:
