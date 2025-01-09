@@ -8,3 +8,4 @@ bitsandbytes>=0.39.0
 accelerate
 pypdf
 rapidocr-onnxruntime
+wget
